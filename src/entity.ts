@@ -1,7 +1,7 @@
 import { clientName } from "./main";
 import { pathfind } from "./util";
 
-const baseURL = import.meta.env.BASE_URL;
+import gumpcoreSpriteURL from "/gumpcore.png";
 
 export type GameState = {
   tileSize: number;
@@ -95,7 +95,6 @@ export type EntityDefinition = {
   damage: (gameState: GameState, entity: Entity, damage: number) => void;
 };
 
-import gumpcoreURL from "/gumpcore.png";
 export const entityDefinitions: Record<string, EntityDefinition> = {
   gumpcore: {
     entity: {
@@ -111,7 +110,7 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       charge: 0,
       health: 1,
     },
-    sprite: createPublicImageElement(32, 32, gumpcoreURL),
+    sprite: createPublicImageElement(32, 32, gumpcoreSpriteURL),
     update(gameState, entity) {
       console.log(entity);
       if (entity.tile === undefined) return;
