@@ -1,100 +1,85 @@
 import "./style.css";
-import typescriptLogo from "./typescript.svg";
-import viteLogo from "/vite.svg";
-import { setupCounter } from "./counter.ts";
 import {
-  Entity,
   createEntity,
-  updateEntity,
-  GameState,
-  entitySprites,
-  initializeGrid,
+  initializeGameState,
+  placeEntity,
+  startBattle,
 } from "./entity.ts";
-import { heuristic, pathfind } from "./util.ts";
+import {
+  calculateRenderGridPosition,
+  render,
+  renderLeftBar,
+} from "./render.ts";
+import { update } from "./update.ts";
+import { gamble } from "./gamble.ts";
+
+export const clientName = "clientTeam";
+
+let gameState = initializeGameState(10, 5);
 
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 const context = canvas.getContext("2d")!;
 
-const TILE_SIZE = 32; // TILE_SIZE in pixels
-const GRID_WIDTH = canvas.width / TILE_SIZE;
-const GRID_HEIGHT = canvas.height / TILE_SIZE;
-
-let gameState: GameState = {
-  entities: [],
-  grid: initializeGrid(GRID_WIDTH, GRID_HEIGHT),
-};
-
-gameState.entities.push({
-  ...structuredClone(createEntity.steve),
-  tile: gameState.grid[0][0],
-  ownerName: "gay",
+document.getElementById("start")!.addEventListener("click", () => {
+  startBattle(gameState);
 });
-gameState.entities.push({
-  ...structuredClone(createEntity.steve),
-  tile: gameState.grid[5][8],
-  ownerName: "otherGay",
+document.getElementById("gamble")!.addEventListener("click", () => {
+  gamble(gameState);
+  renderLeftBar(gameState);
 });
 
-const render = () => {
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  for (var entity of gameState.entities) {
-    if (entity.tile === undefined) continue;
-    if (
-      gameState.entities.filter((entity) => entity.ownerName === "gay")
-        .length === 0
-    ) {
-      context.font = "50px serif";
-      context.fillText("TEAM WINS", 50, 50);
-    }
+renderLeftBar(gameState);
 
-    context.drawImage(
-      entitySprites[entity.name],
-      entity.tile.x * TILE_SIZE,
-      entity.tile.y * TILE_SIZE
-    );
+canvas.addEventListener("mouseleave", () => {
+  gameState.hoveredPosition = undefined;
+});
+canvas.addEventListener("mousemove", (event: MouseEvent) => {
+  const mouseGridPosition = calculateRenderGridPosition(
+    gameState,
+    event.offsetX,
+    event.offsetY
+  );
 
-    /*context.globalCompositeOperation = "source-in";
-    context.globalAlpha = 0.4;
-    context.fillStyle = "red";
-    context.fillRect(
-      entity.tile.x * TILE_SIZE,
-      entity.tile.y * TILE_SIZE,
-      TILE_SIZE,
-      TILE_SIZE
-    );
-    context.globalAlpha = 1;
-    context.globalCompositeOperation = "source-over";*/
-
-    context.fillStyle = "black";
-    context.fillRect(
-      entity.tile.x * TILE_SIZE + 2,
-      entity.tile.y * TILE_SIZE - 1,
-      TILE_SIZE - 4,
-      4
-    );
-
-    context.fillStyle = "orange";
-    context.fillRect(
-      entity.tile.x * TILE_SIZE + 3,
-      entity.tile.y * TILE_SIZE - 2,
-      Math.floor((TILE_SIZE - 4) * (entity.health / entity.maxHealth)) - 1,
-      2
-    );
-    context.fillStyle = "cyan";
-    context.fillRect(
-      entity.tile.x * TILE_SIZE + 3,
-      entity.tile.y * TILE_SIZE + 1,
-      Math.floor((TILE_SIZE - 4) * (4 / 5)) - 1,
-      1
-    );
+  if (
+    mouseGridPosition.x >= 0 &&
+    mouseGridPosition.x < gameState.grid.length &&
+    mouseGridPosition.y >= 0 &&
+    mouseGridPosition.y < gameState.grid[0].length
+  ) {
+    gameState.hoveredPosition = mouseGridPosition;
+    return;
   }
-};
+  gameState.hoveredPosition = undefined;
+});
+canvas.addEventListener("mousedown", (event: MouseEvent) => {
+  const mouseGridPosition = calculateRenderGridPosition(
+    gameState,
+    event.offsetX,
+    event.offsetY
+  );
 
-const update = () => {
-  for (var entity of gameState.entities) {
-    updateEntity[entity.name](entity, gameState);
-  }
-  render();
+  if (
+    mouseGridPosition.x < 0 ||
+    mouseGridPosition.x >= gameState.grid.length ||
+    mouseGridPosition.y < 0 ||
+    mouseGridPosition.y >= gameState.grid[0].length ||
+    gameState.placingEntity === undefined
+  )
+    return;
+
+  placeEntity(gameState, mouseGridPosition.x, mouseGridPosition.y);
+
+  gameState.placingEntity = undefined;
+});
+
+let oldTimestamp = 0;
+const gameloop = (timestamp: number) => {
+  const deltaTime = timestamp - oldTimestamp;
+  oldTimestamp = timestamp;
+
+  update(gameState, deltaTime);
+  render(gameState, canvas, context);
+
+  window.requestAnimationFrame(gameloop);
 };
-render();
-setInterval(update, 1000);
+window.requestAnimationFrame(gameloop);

@@ -1,10 +1,19 @@
-
+#app {
+  display: flex;
+  flex-direction: row;
+  gap: 5rem;
+}
 #canvas {
   margin: auto;
-  background-color: rgb(11, 170, 77);
   image-rendering: pixelated;
+  background-color: #213547;
   width: 1280px;
   height: 640px;
+}
+#leftbar {
+  background-color: yellow;
+  width: 1280px;
+  height: 100px;
 }
 
 :root {
