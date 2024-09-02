@@ -92,6 +92,7 @@ export type EntityDefinition = {
   update: (gameState: GameState, entity: Entity, deltaTime: number) => void;
   damage: (gameState: GameState, entity: Entity, damage: number) => void;
 };
+
 export const entityDefinitions: Record<string, EntityDefinition> = {
   gumpcore: {
     entity: {
@@ -107,7 +108,7 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       charge: 0,
       health: 1,
     },
-    sprite: createPublicImageElement(32, 32, "/gumpcore.png"),
+    sprite: createPublicImageElement(32, 32, "/public/gumpcore.png"),
     update(gameState, entity) {
       console.log(entity);
       if (entity.tile === undefined) return;
