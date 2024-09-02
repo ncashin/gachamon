@@ -1,4 +1,4 @@
-import { Entity, GameState, Position, Tile } from "./entity";
+import { GameState, Tile } from "./entity";
 
 export const resetPathingGrid = (gameState: GameState) => {
   for (var row of gameState.grid) {

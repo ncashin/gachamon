@@ -176,7 +176,7 @@ export const startBattle = (gameState: GameState) => {
     gameState.ownedEntities.filter((entity) => entity.position)
   );
   for (var entity of gameState.entities) {
-    let tile = gameState.grid[entity.position.x][entity.position.y];
+    let tile = gameState.grid[entity.position!.x][entity.position!.y];
     tile.entity = entity;
     entity.tile = tile;
   }

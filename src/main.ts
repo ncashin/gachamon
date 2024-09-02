@@ -1,10 +1,5 @@
 import "./style.css";
-import {
-  createEntity,
-  initializeGameState,
-  placeEntity,
-  startBattle,
-} from "./entity.ts";
+import { initializeGameState, placeEntity, startBattle } from "./entity.ts";
 import {
   calculateRenderGridPosition,
   render,
