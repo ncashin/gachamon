@@ -1,6 +1,8 @@
 import { clientName } from "./main";
 import { pathfind } from "./util";
 
+const baseURL = import.meta.env.BASE_URL;
+
 export type GameState = {
   tileSize: number;
   tileGap: number;
@@ -108,7 +110,7 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       charge: 0,
       health: 1,
     },
-    sprite: createPublicImageElement(32, 32, "/public/gumpcore.png"),
+    sprite: createPublicImageElement(32, 32, baseURL + "/public/gumpcore.png"),
     update(gameState, entity) {
       console.log(entity);
       if (entity.tile === undefined) return;
