@@ -2,12 +2,21 @@ import { entityDefinitions, GameState } from "./entity";
 import { clientName } from "./main";
 
 export const renderLeftBar = (gameState: GameState) => {
-  const leftbar = document.getElementById("leftbar")!;
+  const leftbar = document.getElementById("sidebar")!;
   leftbar.innerHTML = "";
   for (let i = 0; i < gameState.ownedEntities.length; i++) {
     const ownedEntity = gameState.ownedEntities[i];
     const button = document.createElement("button");
-    button.appendChild(entityDefinitions[ownedEntity.name].sprite);
+    button.className = "gachamon";
+
+    let gachaponSprite = entityDefinitions[ownedEntity.name].sprite.cloneNode();
+
+    button.appendChild(gachaponSprite);
+    let nameText = document.createElement("p");
+    nameText.className = "gachamon-text";
+    nameText.textContent = ownedEntity.name;
+    button.appendChild(nameText);
+
     leftbar.appendChild(button);
 
     button.addEventListener("click", () => {
@@ -52,9 +61,9 @@ export const render = (
       context.fillStyle = "green";
       context.fillRect(
         tilePosition.x,
-        tilePosition.y,
+        tilePosition.y + 10,
         gameState.tileSize,
-        gameState.tileSize
+        gameState.tileSize - 10
       );
     }
   }
@@ -82,9 +91,9 @@ export const render = (
     context.fillStyle = "yellow";
     context.fillRect(
       tilePosition.x,
-      tilePosition.y,
+      tilePosition.y + 10,
       gameState.tileSize,
-      gameState.tileSize
+      gameState.tileSize - 10
     );
 
     if (gameState.placingEntity !== undefined) {
@@ -129,7 +138,7 @@ export const render = (
         4
       );
       if (entity.health / entity.maxHealth !== 0) {
-        context.fillStyle = "orange";
+        context.fillStyle = "#22CA15";
         context.fillRect(
           entityDrawPosition.x + 3,
           entityDrawPosition.y - 2,

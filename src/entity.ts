@@ -2,6 +2,7 @@ import { clientName } from "./main";
 import { pathfind } from "./util";
 
 import gumpcoreSpriteURL from "/gumpcore.png";
+import protractorFishSpriteURL from "/protractorfish.png";
 
 export type GameState = {
   tileSize: number;
@@ -73,6 +74,9 @@ export type Position = {
 export const createPublicImageElement = (x: number, y: number, src: string) => {
   let imageElement = new Image(x, y);
   imageElement.src = src;
+  imageElement.style.imageRendering = "pixelated";
+  imageElement.style.width = "64px";
+  imageElement.style.height = "64px";
   return imageElement;
 };
 
@@ -103,14 +107,77 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       name: "gumpcore",
       clientName: "",
       maxCharge: 3,
-      maxHealth: 1,
+      maxHealth: 7,
       speed: 1000,
       tile: undefined,
       speedCounter: 0,
       charge: 0,
-      health: 1,
+      health: 7,
     },
     sprite: createPublicImageElement(32, 32, gumpcoreSpriteURL),
+    update(gameState, entity) {
+      if (entity.tile === undefined) return;
+
+      const { closestEntity } = findClosestEntity(
+        entity.tile,
+        gameState.entities.filter(
+          (filterEntity) => filterEntity.clientName !== entity.clientName
+        )
+      );
+
+      if (closestEntity === undefined || closestEntity.tile === undefined)
+        return;
+      const path = pathfind(gameState, entity.tile, closestEntity.tile);
+
+      if (path.length === 1) {
+        if (path[0].entity === undefined) return;
+
+        if (entity.charge >= entity.maxCharge) {
+          entity.charge = 0;
+          moveEntity(
+            gameState,
+            path[0].entity,
+            path[0].entity.clientName === clientName ? -2 : 2,
+            0
+          );
+          return;
+        }
+
+        entityDefinitions[path[0].entity.name].damage(
+          gameState,
+          path[0].entity,
+          1
+        );
+        entity.charge++;
+        return;
+      }
+
+      if (path[0].entity === undefined) {
+        moveEntityToTile(entity, path[0]);
+      }
+    },
+    damage(gameState, entity, damage) {
+      entity.health -= damage;
+      if (entity.health <= 0) {
+        destroyEntity(gameState, entity);
+      }
+    },
+  },
+  protractorfish: {
+    entity: {
+      position: undefined,
+
+      name: "protractorfish",
+      clientName: "",
+      maxCharge: 3,
+      maxHealth: 7,
+      speed: 1000,
+      tile: undefined,
+      speedCounter: 0,
+      charge: 0,
+      health: 7,
+    },
+    sprite: createPublicImageElement(32, 32, protractorFishSpriteURL),
     update(gameState, entity) {
       console.log(entity);
       if (entity.tile === undefined) return;

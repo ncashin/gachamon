@@ -15,6 +15,16 @@ let gameState = initializeGameState(10, 5);
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 const context = canvas.getContext("2d")!;
 
+canvas.width =
+  gameState.grid.length * (gameState.tileGap + gameState.tileSize) +
+  gameState.outerTileMargin * 2;
+canvas.height =
+  gameState.grid[0].length * (gameState.tileGap + gameState.tileSize) +
+  gameState.outerTileMargin * 2;
+
+canvas.style.width = canvas.width * 2 + "px";
+canvas.style.height = canvas.height * 2 + "px";
+
 document.getElementById("start")!.addEventListener("click", () => {
   startBattle(gameState);
 });

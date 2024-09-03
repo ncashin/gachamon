@@ -8,12 +8,20 @@
   </head>
   <body>
     <link rel="stylesheet" href="style.css" />
-    <div id="app">
-      <button id="gamble">Gamble</button>
-      <button id="start">Battle</button>
+    <div class="background">
+      <div class="container">
+        <div class="side">
+          <div id="sidebar" class="gachamon-display"></div>
+        </div>
 
-      <div id="leftbar"></div>
-      <canvas id="canvas" width="640px" height="320px"></canvas>
+        <div class="bottom">
+          <button id="gamble">Gamble</button>
+          <button id="start">Battle</button>
+        </div>
+        <div class="game">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
