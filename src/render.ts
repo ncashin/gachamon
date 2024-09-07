@@ -1,5 +1,15 @@
-import { entityDefinitions, GameState } from "./entity";
+import {
+  battlegroundSprite,
+  createPublicImageElement,
+  entityDefinitions,
+  GameState,
+} from "./entity";
 import { clientName } from "./main";
+
+export const renderMoney = (gameState: GameState) => {
+  const moneyDisplay = document.getElementById("money")!;
+  moneyDisplay.textContent = "Money: $" + gameState.money;
+};
 
 export const renderLeftBar = (gameState: GameState) => {
   const leftbar = document.getElementById("sidebar")!;
@@ -9,9 +19,9 @@ export const renderLeftBar = (gameState: GameState) => {
     const button = document.createElement("button");
     button.className = "gachamon";
 
-    let gachaponSprite = entityDefinitions[ownedEntity.name].sprite.cloneNode();
+    let gachamonSprite = entityDefinitions[ownedEntity.name].sprite.cloneNode();
 
-    button.appendChild(gachaponSprite);
+    button.appendChild(gachamonSprite);
     let nameText = document.createElement("p");
     nameText.className = "gachamon-text";
     nameText.textContent = ownedEntity.name;
@@ -24,6 +34,13 @@ export const renderLeftBar = (gameState: GameState) => {
     });
   }
 };
+
+const modal = document.getElementById("gacha-modal")!;
+window.addEventListener("onclick", (event) => {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+});
 
 export const calculateGridRenderPosition = (
   gameState: GameState,
@@ -59,12 +76,54 @@ export const render = (
     for (let y = 0; y < gameState.grid[0].length; y++) {
       const tilePosition = calculateGridRenderPosition(gameState, x, y);
       context.fillStyle = "green";
-      context.fillRect(
+
+      context.drawImage(
+        battlegroundSprite,
         tilePosition.x,
-        tilePosition.y + 10,
-        gameState.tileSize,
-        gameState.tileSize - 10
+        tilePosition.y,
+        battlegroundSprite.width,
+        battlegroundSprite.height
       );
+      if (
+        gameState.hoveredPosition !== undefined &&
+        gameState.hoveredPosition.x === x &&
+        gameState.hoveredPosition.y === y
+      ) {
+        context.globalCompositeOperation = "source-atop";
+        const tilePosition = calculateGridRenderPosition(
+          gameState,
+          gameState.hoveredPosition.x,
+          gameState.hoveredPosition.y
+        );
+        context.globalAlpha = 0.2;
+        context.fillStyle = "yellow";
+        context.fillRect(
+          tilePosition.x,
+          tilePosition.y,
+          gameState.tileSize,
+          gameState.tileSize
+        );
+        context.globalCompositeOperation = "source-over";
+        context.drawImage(
+          battlegroundSprite,
+          tilePosition.x,
+          tilePosition.y,
+          battlegroundSprite.width,
+          battlegroundSprite.height
+        );
+
+        if (gameState.placingEntity !== undefined) {
+          context.globalAlpha = 0.7;
+          context.drawImage(
+            entityDefinitions[gameState.placingEntity.name].sprite,
+            tilePosition.x,
+            tilePosition.y,
+            entityDefinitions[gameState.placingEntity.name].sprite.width,
+            entityDefinitions[gameState.placingEntity.name].sprite.height
+          );
+        }
+        context.globalAlpha = 1;
+      }
     }
   }
 
@@ -81,34 +140,6 @@ export const render = (
     gameState.grid[0].length * (gameState.tileSize + gameState.tileGap)
   );
 
-  if (gameState.hoveredPosition !== undefined) {
-    const tilePosition = calculateGridRenderPosition(
-      gameState,
-      gameState.hoveredPosition.x,
-      gameState.hoveredPosition.y
-    );
-    context.globalAlpha = 0.2;
-    context.fillStyle = "yellow";
-    context.fillRect(
-      tilePosition.x,
-      tilePosition.y + 10,
-      gameState.tileSize,
-      gameState.tileSize - 10
-    );
-
-    if (gameState.placingEntity !== undefined) {
-      context.globalAlpha = 0.7;
-      context.drawImage(
-        entityDefinitions[gameState.placingEntity.name].sprite,
-        tilePosition.x,
-        tilePosition.y,
-        entityDefinitions[gameState.placingEntity.name].sprite.width,
-        entityDefinitions[gameState.placingEntity.name].sprite.height
-      );
-    }
-    context.globalAlpha = 1;
-  }
-
   if (gameState.simulationActive) {
     for (var entity of gameState.entities) {
       if (entity.tile === undefined) continue;
@@ -121,6 +152,29 @@ export const render = (
         entity.tile.x,
         entity.tile.y
       );
+      if (entity.damageEffectTime > 0) {
+        context.drawImage(
+          entityDefinitions[entity.name].sprite,
+          entityDrawPosition.x * dir,
+          entityDrawPosition.y,
+          entityDefinitions[entity.name].sprite.width * dir,
+          entityDefinitions[entity.name].sprite.height
+        );
+        context.globalCompositeOperation = "source-atop";
+        context.globalAlpha =
+          entity.damageEffectTime / 1000 > 1
+            ? 1
+            : entity.damageEffectTime / 1000;
+        context.fillStyle = "red";
+        context.fillRect(
+          entityDrawPosition.x * dir,
+          entityDrawPosition.y,
+          gameState.tileSize * dir,
+          gameState.tileSize
+        );
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = 1;
+      }
       context.drawImage(
         entityDefinitions[entity.name].sprite,
         entityDrawPosition.x * dir,
@@ -138,7 +192,7 @@ export const render = (
         4
       );
       if (entity.health / entity.maxHealth !== 0) {
-        context.fillStyle = "#22CA15";
+        context.fillStyle = "orange";
         context.fillRect(
           entityDrawPosition.x + 3,
           entityDrawPosition.y - 2,

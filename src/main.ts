@@ -4,6 +4,7 @@ import {
   calculateRenderGridPosition,
   render,
   renderLeftBar,
+  renderMoney,
 } from "./render.ts";
 import { update } from "./update.ts";
 import { gamble } from "./gamble.ts";
@@ -29,10 +30,13 @@ document.getElementById("start")!.addEventListener("click", () => {
   startBattle(gameState);
 });
 document.getElementById("gamble")!.addEventListener("click", () => {
-  gamble(gameState);
-  renderLeftBar(gameState);
+  if (gameState.money >= 500) {
+    gamble(gameState);
+    renderMoney(gameState);
+    renderLeftBar(gameState);
+  }
 });
-
+renderMoney(gameState);
 renderLeftBar(gameState);
 
 canvas.addEventListener("mouseleave", () => {
@@ -56,6 +60,7 @@ canvas.addEventListener("mousemove", (event: MouseEvent) => {
   }
   gameState.hoveredPosition = undefined;
 });
+
 canvas.addEventListener("mousedown", (event: MouseEvent) => {
   const mouseGridPosition = calculateRenderGridPosition(
     gameState,

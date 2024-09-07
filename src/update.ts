@@ -7,6 +7,7 @@ export const update = (gameState: GameState, deltaTime: number) => {
 
   if (gameState.simulationActive === false) return;
   for (var entity of gameState.entities) {
+    entity.damageEffectTime -= deltaTime;
     if (entity.speedCounter < entity.speed) {
       entity.speedCounter += deltaTime;
       continue;

@@ -4,10 +4,18 @@ import { pathfind } from "./util";
 import gumpcoreSpriteURL from "/gumpcore.png";
 import protractorFishSpriteURL from "/protractorfish.png";
 
+import battlegroundSpriteURL from "/battleground.png";
+
+import hurtSoundURL from "/hurt.wav";
+import deathSoundURL from "/death.wav";
+import { renderMoney } from "./render";
+
 export type GameState = {
   tileSize: number;
   tileGap: number;
   outerTileMargin: number;
+
+  money: number;
 
   ownedEntities: Entity[];
 
@@ -27,7 +35,9 @@ export const initializeGameState = (
 ): GameState => ({
   tileSize: 32,
   tileGap: 16,
-  outerTileMargin: 16,
+  outerTileMargin: 25,
+
+  money: 500,
 
   ownedEntities: [],
 
@@ -79,10 +89,16 @@ export const createPublicImageElement = (x: number, y: number, src: string) => {
   imageElement.style.height = "64px";
   return imageElement;
 };
+export const battlegroundSprite = createPublicImageElement(
+  32,
+  32,
+  battlegroundSpriteURL
+);
 
 export type Entity = {
   position: Position | undefined;
   name: EntityName;
+
   clientName: string;
   tile: Tile | undefined;
   maxHealth: number;
@@ -91,6 +107,8 @@ export type Entity = {
   maxCharge: number;
   speed: number;
   speedCounter: number;
+
+  damageEffectTime: number;
 };
 export type EntityDefinition = {
   entity: Entity;
@@ -103,7 +121,6 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
   gumpcore: {
     entity: {
       position: undefined,
-
       name: "gumpcore",
       clientName: "",
       maxCharge: 3,
@@ -113,6 +130,7 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       speedCounter: 0,
       charge: 0,
       health: 7,
+      damageEffectTime: 0,
     },
     sprite: createPublicImageElement(32, 32, gumpcoreSpriteURL),
     update(gameState, entity) {
@@ -157,10 +175,16 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       }
     },
     damage(gameState, entity, damage) {
+      entity.damageEffectTime = 1001;
       entity.health -= damage;
       if (entity.health <= 0) {
+        let sound = new Audio(deathSoundURL);
+        sound.play();
         destroyEntity(gameState, entity);
+        return;
       }
+      let sound = new Audio(hurtSoundURL);
+      sound.play();
     },
   },
   protractorfish: {
@@ -171,15 +195,16 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       clientName: "",
       maxCharge: 3,
       maxHealth: 7,
-      speed: 1000,
+      speed: 750,
       tile: undefined,
       speedCounter: 0,
       charge: 0,
       health: 7,
+
+      damageEffectTime: 0,
     },
     sprite: createPublicImageElement(32, 32, protractorFishSpriteURL),
     update(gameState, entity) {
-      console.log(entity);
       if (entity.tile === undefined) return;
 
       const { closestEntity } = findClosestEntity(
@@ -221,10 +246,18 @@ export const entityDefinitions: Record<string, EntityDefinition> = {
       }
     },
     damage(gameState, entity, damage) {
+      entity.damageEffectTime = 1001;
+
       entity.health -= damage;
       if (entity.health <= 0) {
+        let sound = new Audio(deathSoundURL);
+        sound.play();
         destroyEntity(gameState, entity);
+        return;
       }
+
+      let sound = new Audio(hurtSoundURL);
+      sound.play();
     },
   },
 };
@@ -258,7 +291,11 @@ export const startBattle = (gameState: GameState) => {
 export const endBattle = (gameState: GameState) => {
   gameState.simulationActive = false;
   gameState.winnerDisplayTime = 1000;
-  gameState.winnerName = gameState.entities[0].name;
+  gameState.winnerName = gameState.entities[0].clientName;
+  if (gameState.winnerName === clientName) {
+    gameState.money += Math.floor(200 + 300 * Math.random());
+  }
+  renderMoney(gameState);
 };
 
 export const createEntity = (

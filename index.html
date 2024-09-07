@@ -8,6 +8,7 @@
   </head>
   <body>
     <link rel="stylesheet" href="style.css" />
+
     <div class="background">
       <div class="container">
         <div class="side">
@@ -15,7 +16,8 @@
         </div>
 
         <div class="bottom">
-          <button id="gamble">Gamble</button>
+          <p id="money">Money:</p>
+          <button id="gamble">Gamble: $500</button>
           <button id="start">Battle</button>
         </div>
         <div class="game">
@@ -23,6 +25,19 @@
         </div>
       </div>
     </div>
+
+    <video
+      autoplay
+      src="keenangacha.mov"
+      type="video/movie"
+      id="gachavideo"></video>
+
+    <div id="gacha-modal" class="modal-background">
+      <div id="gacha-modal-content" class="modal-content">
+        <div id="gacha-modal-content"></div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
